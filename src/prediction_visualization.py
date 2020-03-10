@@ -1,8 +1,8 @@
 #library
-from src.data_analysis import read_data, data_prepreocessing
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import os
 import matplotlib.pyplot as plt
 plt.style.use('ggplot')
 import lightgbm as lgb
@@ -147,13 +147,40 @@ def plot_confusion_matrix(oof, y):
     ax.set_ylabel('True Label')
     ax.set_title('Confusion Matrix');
 
+def save_plot_prediction(best_features, oof, y):
+    plt.figure(figsize=(16, 12));
+    sns.barplot(x="importance", y="feature", data=best_features.sort_values(by="importance", ascending=False),
+                palette="OrRd_r");
+    plt.title('Importance of Features of five folds');
+    plt.savefig('output_plots/Importance_of_Features.png')
+
+    prediction_train = oof.argmax(1)
+    assert (len(prediction_train) == len(y))
+    min_rating = min(min(prediction_train), min(y))
+    max_rating = max(max(prediction_train), max(y))
+    num_ratings = int(max_rating - min_rating + 1)
+    conf_mat = [[0 for i in range(num_ratings)]
+                for j in range(num_ratings)]
+    for a, b in zip(prediction_train, y):
+        conf_mat[a - min_rating][b - min_rating] += 1
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    sns.heatmap(conf_mat, annot=True, cmap="YlGnBu", fmt="d", ax=ax)
+    ax.set_xlabel('Prediction')
+    ax.set_ylabel('True Label')
+    ax.set_title('Confusion Matrix');
+    plt.savefig('output_plots/Confusion_matrix.png')
+
+
 def main():
+    from data_analysis import read_data, data_prepreocessing
+    if not os.path.exists('output_plots'):
+        os.mkdir('output_plots')
     train, test, all_data, breeds, colors, states, all_count, sentiment_dict = read_data('data')
     train, test, all_data, breeds, colors = data_prepreocessing(train, test, all_data, breeds, colors, sentiment_dict)
     train, y, test, cat_cols = build_model(train, test)
     best_features, oof, model = model_train(train, y, test, cat_cols)
-    plot_importance_of_feature(best_features)
-    plot_confusion_matrix(oof, y)
+    save_plot_prediction(best_features, oof, y)
 
 if __name__ == '__main__':
 	main()

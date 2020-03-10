@@ -60,9 +60,12 @@ You can also run the following code attached.
 ```shell
 python src/data_analysis.py
 ```
+The plots of data analysis will be saved in `./output_plots/`.
+
 
 ### Train LightGBM Model and Result Visuslization
 ```shell
 python src/prediction_visualization.py
 ```
+The plots of result visuslization will be saved in `./output_plots/`.
 

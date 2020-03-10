@@ -20,6 +20,7 @@ def kappa(y_true, y_pred):
     return cohen_kappa_score(y_true, y_pred, weights='quadratic')
 
 def read_data(filepath):
+    '''return data'''
     breeds = pd.read_csv(filepath + '/breed_labels.csv')
     colors = pd.read_csv(filepath + '/color_labels.csv')
     states = pd.read_csv(filepath + '/state_labels.csv')
@@ -54,6 +55,7 @@ def read_data(filepath):
     return train, test, all_data, breeds, colors, states, all_count, sentiment_dict
 
 def data_prepreocessing(train, test, all_data, breeds, colors, sentiment_dict):
+    '''data preprocessing'''
     all_data['Type'] = all_data['Type'].apply(lambda x: 'Dog' if x == 1 else 'Cat')
     train['Name'] = train['Name'].fillna('Unnamed')
     test['Name'] = test['Name'].fillna('Unnamed')
@@ -139,6 +141,7 @@ def data_prepreocessing(train, test, all_data, breeds, colors, sentiment_dict):
     return train, test, all_data, breeds, colors
 
 def plot_adoption_speed_distribution(train, all_data):
+    '''plot Adoption speed distribution'''
     plt.figure(figsize=(14, 6));
     g = sns.countplot(x='AdoptionSpeed', data=all_data.loc[all_data['dataset_type'] == 'train'], palette="BuPu")
     plt.title('Adoption speed distribution');
@@ -159,6 +162,7 @@ def plot_adoption_speed_distribution(train, all_data):
 
 
 def plot_count_by_feature(dataframe, feature, all_count, hue = 'AdoptionSpeed', title = ''):
+    '''plot Adoption speed distribution by feature'''
     g = sns.countplot(x = feature, data = dataframe, hue = hue, palette="BuPu");
     plt.title(f'AdoptionSpeed {title}');
     ax = g.axes
@@ -204,10 +208,12 @@ def make_factor_plot(dataframe, feature, col, title, all_count, ann=True, col_wr
                      textcoords='offset points')
 
 def plot_analysis_of_type(all_data, all_count):
+    '''tyoe'''
     plt.figure(figsize=(18, 8));
     plot_count_by_feature(dataframe=all_data.loc[all_data['dataset_type'] == 'train'], feature='Type',  all_count =  all_count, title='by Type')
 
 def plot_analysis_of_name(all_data, all_count):
+    '''name'''
     fig, ax = plt.subplots(figsize=(16, 10))
     plt.subplot(1, 2, 1)
     cat_name = ' '.join(all_data.loc[all_data['Type'] == 'Cat', 'Name'].fillna('').values)
@@ -230,6 +236,7 @@ def plot_analysis_of_name(all_data, all_count):
     plt.xticks([0, 1], ['Named', 'Unnamed'])
 
 def plot_analysis_of_age(train):
+    '''age'''
     plt.figure(figsize=(18, 8));
     sns.boxplot(x="Age", y="AdoptionSpeed", orient='h', data=train);
     plt.title('AdoptionSpeed by age');
@@ -251,17 +258,19 @@ def plot_analysis_of_age(train):
     py.iplot(dict(data=data, layout=layout), filename='basic-line')
 
 def plot_analysis_of_breed(train, all_count):
+    '''breed'''
     plt.figure(figsize=(18, 8));
     plot_count_by_feature(dataframe=train, feature='Pure_breed', all_count = all_count, title='by whether having pure breed')
     plt.xticks([0, 1], ['Not Pure_breed', 'Pure_breed'])
 
 def plot_analysis_of_gender(train, all_count):
+    '''gender'''
     plt.figure(figsize=(18, 8));
     plot_count_by_feature(dataframe=train, feature='Gender', all_count = all_count, title='by gender')
     plt.xticks([0, 1, 2], ['Male', 'Female', 'Mixed'])
 
 def plot_analysis_of_color(train, all_data, all_count):
-
+    '''color'''
     plt.figure(figsize=(18, 8));
     sns.countplot(data=all_data, x='Color1_name',
                   palette=['Black', 'Brown', '#FFFDD0', 'Gray', 'Gold', 'White', 'Yellow']);
@@ -270,13 +279,14 @@ def plot_analysis_of_color(train, all_data, all_count):
     make_factor_plot(dataframe=train, feature='Color1_name', col='AdoptionSpeed',
                      title='Counts of pets by main color and Adoption Speed', all_count = all_count);
 
-
 def plot_analysis_of_matiritysize(train, all_count):
+    '''matiritysize'''
     plt.figure(figsize=(18, 8));
     plot_count_by_feature(dataframe=train, feature='MaturitySize', all_count = all_count, title='by maturitySize')
     plt.xticks([0, 1, 2, 3], ['Small', 'Medium', 'Large', 'Extra Large'])
 
 def plot_analysis_of_health(train, all_count):
+    '''health'''
     plt.figure(figsize=(20, 12));
     plt.subplot(2, 2, 1)
     plot_count_by_feature(dataframe=train, feature='Vaccinated', all_count = all_count, title='by whether vaccinated')
@@ -301,22 +311,125 @@ def plot_analysis_of_health(train, all_count):
     plt.suptitle('Adoption Speed and health conditions');
 
 def plot_analysis_of_fee(train, all_count):
+    '''fee'''
     plt.figure(figsize=(18, 8));
     plot_count_by_feature(dataframe=train, feature='Free', all_count = all_count, title='by whether free')
 
+def save_plot_analysis(train, all_data, all_count):
+    '''save plots to dir: output_plots'''
+    plt.figure(figsize=(14, 6));
+    g = sns.countplot(x='AdoptionSpeed', data=all_data.loc[all_data['dataset_type'] == 'train'], palette="BuPu")
+    plt.title('Adoption speed distribution');
+    ax = g.axes
+    for p in ax.patches:
+        ax.annotate(f"{p.get_height() * 100 / train.shape[0]:.2f}%", (p.get_x() + p.get_width() / 2., p.get_height()),
+                    ha='center', va='center', fontsize=11, color='gray', rotation=0, xytext=(0, 10),
+                    textcoords='offset points')
+    plt.savefig('output_plots/Adoption_speed_distribution1.png')
+
+    plt.figure(figsize=(10, 8));
+    labels = '0', '1', '2', '3', '4'
+    fraces = [2.73, 20.61, 26.93, 21.74, 27.99]
+    explode = [0.05, 0.05, 0.05, 0.05, 0.05]
+    plt.axes(aspect=1)
+    plt.pie(x=fraces, labels=labels, autopct='%0f%%', explode=explode, shadow=True)
+    plt.title('Adoption speed distribution');
+    plt.savefig('output_plots/Adoption_speed_distribution2.png')
+
+    plt.figure(figsize=(18, 8));
+    plot_count_by_feature(dataframe=all_data.loc[all_data['dataset_type'] == 'train'], feature='Type',
+                          all_count=all_count, title='by Type')
+    plt.savefig('output_plots/Adoption_speed_by_type.png')
+
+    fig, ax = plt.subplots(figsize=(16, 10))
+    plt.subplot(1, 2, 1)
+    cat_name = ' '.join(all_data.loc[all_data['Type'] == 'Cat', 'Name'].fillna('').values)
+    wordcloud_cat = WordCloud(width=1200, height=1000).generate(cat_name)
+    plt.imshow(wordcloud_cat)
+    plt.title('WordCloud of Cat Name')
+    plt.axis("off")
+
+    plt.subplot(1, 2, 2)
+    dog_name = ' '.join(all_data.loc[all_data['Type'] == 'Dog', 'Name'].fillna('').values)
+    wordcloud_dog = WordCloud(width=1200, height=1000).generate(dog_name)
+    plt.imshow(wordcloud_dog)
+    plt.title('WordCloud of Dog Name')
+    plt.axis("off")
+    plt.savefig('output_plots/wordcloud_name.png')
+
+    plt.figure(figsize=(18, 8));
+    plot_count_by_feature(dataframe=all_data.loc[all_data['dataset_type'] == 'train'], feature='No_name',
+                          all_count=all_count,
+                          title='by whether having a name')
+    plt.xticks([0, 1], ['Named', 'Unnamed'])
+    plt.savefig('output_plots/Adoption_speed_by_name.png')
+
+    plt.figure(figsize=(18, 8));
+    sns.boxplot(x="Age", y="AdoptionSpeed", orient='h', data=train);
+    plt.title('AdoptionSpeed by age');
+    plt.savefig('output_plots/Adoption_speed_by_age.png')
+
+    plt.figure(figsize=(18, 8));
+    plot_count_by_feature(dataframe=train, feature='Pure_breed', all_count=all_count,
+                          title='by whether having pure breed')
+    plt.xticks([0, 1], ['Not Pure_breed', 'Pure_breed'])
+    plt.savefig('output_plots/Adoption_speed_by_breed.png')
+
+    plt.figure(figsize=(18, 8));
+    plot_count_by_feature(dataframe=train, feature='Gender', all_count=all_count, title='by gender')
+    plt.xticks([0, 1, 2], ['Male', 'Female', 'Mixed'])
+    plt.savefig('output_plots/Adoption_speed_by_gender.png')
+
+    plt.figure(figsize=(18, 8));
+    sns.countplot(data=all_data, x='Color1_name',
+                  palette=['Black', 'Brown', '#FFFDD0', 'Gray', 'Gold', 'White', 'Yellow']);
+    plt.title('Counts of pets in datasets by main color');
+    plt.savefig('output_plots/counts_of_pets_by_color.png')
+
+    make_factor_plot(dataframe=train, feature='Color1_name', col='AdoptionSpeed',
+                     title='Counts of pets by main color and Adoption Speed', all_count=all_count);
+    plt.savefig('output_plots/Adoption_speed_by_color.png')
+
+    plt.figure(figsize=(18, 8));
+    plot_count_by_feature(dataframe=train, feature='MaturitySize', all_count=all_count, title='by maturitySize')
+    plt.xticks([0, 1, 2, 3], ['Small', 'Medium', 'Large', 'Extra Large'])
+    plt.savefig('output_plots/Adoption_speed_by_MaturitySize.png')
+
+    plt.figure(figsize=(20, 12));
+    plt.subplot(2, 2, 1)
+    plot_count_by_feature(dataframe=train, feature='Vaccinated', all_count=all_count, title='by whether vaccinated')
+    plt.xticks([0, 1, 2], ['Yes', 'No', 'Not sure']);
+    plt.title('AdoptionSpeed and Vaccinated');
+
+    plt.subplot(2, 2, 2)
+    plot_count_by_feature(dataframe=train, feature='Dewormed', all_count=all_count, title='by whether dewormed')
+    plt.xticks([0, 1, 2], ['Yes', 'No', 'Not sure']);
+    plt.title('AdoptionSpeed and Dewormed');
+
+    plt.subplot(2, 2, 3)
+    plot_count_by_feature(dataframe=train, feature='Sterilized', all_count=all_count, title='by whether sterilized')
+    plt.xticks([0, 1, 2], ['Yes', 'No', 'Not sure']);
+    plt.title('AdoptionSpeed and Sterilized');
+
+    plt.subplot(2, 2, 4)
+    plot_count_by_feature(dataframe=train, feature='Health', all_count=all_count, title='by Health')
+    plt.xticks([0, 1, 2], ['Healthy', 'Minor Injury', 'Serious Injury']);
+    plt.title('AdoptionSpeed and Health');
+
+    plt.suptitle('Adoption Speed and health conditions');
+    plt.savefig('output_plots/Adoption_speed_by_health.png')
+
+    plt.figure(figsize=(18, 8));
+    plot_count_by_feature(dataframe=train, feature='Free', all_count=all_count, title='by whether free')
+    plt.savefig('output_plots/Adoption_speed_by_fee.png')
+
+
 def main():
+    if not os.path.exists('output_plots'):
+        os.mkdir('output_plots')
     train, test, all_data, breeds, colors, states, all_count, sentiment_dict = read_data('data')
     train, test, all_data, breeds, colors = data_prepreocessing(train, test, all_data, breeds, colors, sentiment_dict)
-    plot_adoption_speed_distribution(train, all_data)
-    plot_analysis_of_type(all_data, all_count)
-    plot_analysis_of_name(all_data, all_count)
-    plot_analysis_of_age(train)
-    plot_analysis_of_breed(train, all_count)
-    plot_analysis_of_gender(train, all_count)
-    plot_analysis_of_color(train, all_data, all_count)
-    plot_analysis_of_matiritysize(train, all_count)
-    plot_analysis_of_health(train, all_count)
-    plot_analysis_of_fee(train, all_count)
+    save_plot_analysis(train, all_data, all_count)
 
 if __name__ == '__main__':
 	main()
