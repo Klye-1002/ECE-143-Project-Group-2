@@ -34,6 +34,7 @@ We provide:
 - Code for data analysis
 - Code for prediction model and result visualization
 - Jupyter notebook which shows all the visualizations
+- Pdf file of presentation
 
 ### Data
 The data in `./data/` is already downloaded from Kaggle and we delete some unused data.
